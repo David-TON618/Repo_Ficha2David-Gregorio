@@ -10,25 +10,51 @@ const cards = [
 ]
 
 function App() {
-
   const [filter, setFilter] = useState('todas')
   const [search, setSearch] = useState('')
+  const [lucky, setLucky] = useState(null)
+  const [sorted, setSorted] = useState(false)
 
-  const visible = cards
-    .filter(card => filter === 'todas' || card.type === filter)
-    .filter(card => card.name.toLowerCase().includes(search.toLowerCase()))
+  function pickRandom() {
+    const index = Math.floor(Math.random() * cards.length)
+    setLucky(cards[index])
+  }
 
+  function chooseFilter(type) {
+    setFilter(type)
+    setLucky(null)
+  }
+
+  const filtered = lucky
+    ? [lucky]
+    : cards
+        .filter(card => filter === 'todas' || card.type === filter)
+        .filter(card => card.name.toLowerCase().includes(search.toLowerCase()))
+
+  const visible = sorted
+    ? [...filtered].sort((a, b) => b.attack - a.attack)
+    : filtered
 
   return (
     <div>
       <h1>Eu tenho {cards.length} cartas e {visible.length} à vista!</h1>
 
-      <input value={search} onChange={e => setSearch(e.target.value)} placeholder='Pesquisar'></input>
-      <button onClick={() => setFilter('todas')}>Todas</button>
-      <button onClick={() => setFilter('Criatura')}>Criaturas</button>
-      <button onClick={() => setFilter('Imigrante')}>Imigrantes</button>
-      <button onClick={() => setFilter('Discord Mod')}>Discord Mods</button>
-      <button onClick={() => setFilter('Baleia')}>Baleias</button>
+      <input
+        value={search}
+        onChange={e => { setSearch(e.target.value); setLucky(null) }}
+        placeholder="Pesquisar"
+      />
+
+      <button onClick={() => chooseFilter('todas')}>Todas</button>
+      <button onClick={() => chooseFilter('Criatura')}>Criaturas</button>
+      <button onClick={() => chooseFilter('Imigrante')}>Imigrantes</button>
+      <button onClick={() => chooseFilter('Discord Mod')}>Discord Mods</button>
+      <button onClick={() => chooseFilter('Baleia')}>Baleias</button>
+      <button onClick={pickRandom}>Sorte</button>
+      <button onClick={() => setSorted(!sorted)}>
+        {sorted ? 'Ordem original' : 'Ordenar por ataque'}
+      </button>
+
       {visible.map(card => (
         <Card
           key={card.name}
