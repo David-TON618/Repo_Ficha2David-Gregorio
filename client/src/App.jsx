@@ -11,7 +11,7 @@ const cards = [
 function App() {
   return (
     <div>
-      
+      <h1>Eu tenho {cards.length} cartas!</h1>
       {cards.map(card => (
         <Card
           key={card.name}
