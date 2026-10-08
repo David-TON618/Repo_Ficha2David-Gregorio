@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import Card from './Card'
 
 const cards = [
@@ -9,10 +10,24 @@ const cards = [
 ]
 
 function App() {
+
+  const [filter, setFilter] = useState('todas')
+
+  const visible = cards.filter(card => {
+    if (filter === 'todas') return true
+    return card.type === filter
+  })
+
+
   return (
     <div>
-      <h1>Eu tenho {cards.length} cartas!</h1>
-      {cards.map(card => (
+      <h1>Eu tenho {cards.length} cartas e {visible.length} à vista!</h1>
+      <button onClick={() => setFilter('todas')}>Todas</button>
+      <button onClick={() => setFilter('Criatura')}>Criaturas</button>
+      <button onClick={() => setFilter('Imigrante')}>Imigrantes</button>
+      <button onClick={() => setFilter('Discord Mod')}>Discord Mods</button>
+      <button onClick={() => setFilter('Baleia')}>Baleias</button>
+      {visible.map(card => (
         <Card
           key={card.name}
           name={card.name}
