@@ -38,6 +38,10 @@ app.get("/", (req, res) => {
   ));
 });
 
+app.get("/api/cartas", (req, res) => {
+  res.json(cards);
+});
+
 app.get("/sobre", (req, res) => {
   res.send(page(
     "Sobre",
