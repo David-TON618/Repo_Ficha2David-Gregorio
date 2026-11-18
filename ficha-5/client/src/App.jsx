@@ -1,16 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "./Card.jsx";
 
-const initialCards = [
-  { name: "Dragão de Cobalto", type: "Criatura", attack: 7, defense: 5 },
-  { name: "Guardiã das Marés", type: "Criatura", attack: 4, defense: 8 },
-  { name: "Rito de Ferro", type: "Feitiço", attack: 0, defense: 0 },
-  { name: "Sentinela de Âmbar", type: "Criatura", attack: 6, defense: 6 },
-  { name: "Eco do Vazio", type: "Feitiço", attack: 0, defense: 0 },
-];
+const API_URL = "http://localhost:3000/api/cartas";
 
 function App() {
-  const [cards, setCards] = useState(initialCards);
+  const [cards, setCards] = useState([]);
   const [filter, setFilter] = useState("Todas");
   const [search, setSearch] = useState("");
   const [randomCard, setRandomCard] = useState(null);
@@ -18,6 +12,17 @@ function App() {
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [attack, setAttack] = useState("");
+  const [formError, setFormError] = useState("");
+
+  useEffect(() => {
+    fetch(API_URL)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+      .then((data) => setCards(data))
+      .catch(() => setFormError("Não foi possível carregar as cartas. Confirma se o servidor está ligado."));
+  }, []);
 
   let visible = cards
     .filter((card) => filter === "Todas" || card.type === filter)
@@ -25,13 +30,27 @@ function App() {
 
   if (sorted) visible = [...visible].sort((a, b) => b.attack - a.attack);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    const card = { name: name.trim(), type, attack: Number(attack), defense: 0 };
-    setCards([...cards, card]);
-    setName("");
-    setType("");
-    setAttack("");
+    setFormError("");
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, type, attack: Number(attack) }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setFormError(`HTTP ${response.status}`);
+        return;
+      }
+      setCards([...cards, data]);
+      setName("");
+      setType("");
+      setAttack("");
+    } catch {
+      setFormError("Não foi possível contactar o servidor.");
+    }
   }
 
   function pickRandom() {
@@ -56,6 +75,7 @@ function App() {
           <label>Ataque<input type="number" min="0" value={attack} onChange={(event) => setAttack(event.target.value)} /></label>
           <button type="submit">Adicionar carta</button>
         </form>
+        {formError && <p className="form-error">{formError}</p>}
       </section>
       <div>
         <button onClick={() => setFilter("Todas")}>Todas</button>
@@ -64,7 +84,7 @@ function App() {
         <button onClick={() => setSorted(!sorted)}>{sorted ? "Ordem original" : "Ordenar por ataque"}</button>
       </div>
       <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Procurar pelo nome…" />
-      {visible.length === 0 ? <p>Nenhuma carta corresponde.</p> : <ul>{visible.map((card, index) => <Card key={card.name + index} {...card} />)}</ul>}
+      {visible.length === 0 ? <p>Nenhuma carta corresponde.</p> : <ul>{visible.map((card) => <Card key={card.id} {...card} />)}</ul>}
       <h2>Carta à sorte</h2>
       <button onClick={pickRandom}>Escolher outra</button>
       {randomCard && <p><b>{randomCard.name}</b> — {randomCard.type} · ataque {randomCard.attack} · defesa {randomCard.defense}</p>}
