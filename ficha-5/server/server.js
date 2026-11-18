@@ -1,7 +1,11 @@
 const express = require("express");
+const cors = require("cors");
 
 const app = express();
 const PORT = 3000;
+
+app.use(cors({ origin: "http://localhost:5173" }));
+app.use(express.json());
 
 const cards = [
   { name: "Dragão de Cobalto", type: "Criatura", attack: 7, defense: 5 },
@@ -28,6 +32,19 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api/cartas", (req, res) => res.json(cards));
+
+app.post("/api/cartas", (req, res) => {
+  const card = {
+    id: Date.now(),
+    name: String(req.body.name || "").trim(),
+    type: String(req.body.type || "").trim(),
+    attack: Number(req.body.attack) || 0,
+    defense: 0,
+  };
+
+  cards.push(card);
+  res.status(201).json(card);
+});
 
 app.get("/sobre", (req, res) => {
   res.send(page("Sobre", `<p>Feito por <b>&lt;nome do aluno&gt;</b>, turma &lt;turma&gt;.</p>`));

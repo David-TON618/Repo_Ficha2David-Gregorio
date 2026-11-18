@@ -2,5 +2,5 @@
   "name": "server",
   "private": true,
   "scripts": { "start": "node server.js", "dev": "node --watch server.js" },
-  "dependencies": { "express": "^5.1.0" }
+  "dependencies": { "cors": "^2.8.5", "express": "^5.1.0" }
 }
