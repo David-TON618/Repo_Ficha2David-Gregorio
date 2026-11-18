@@ -35,10 +35,19 @@ app.get("/", (req, res) => {
 app.get("/api/cartas", (req, res) => res.json(cards));
 
 app.post("/api/cartas", (req, res) => {
+  const name = String(req.body.name || "").trim();
+  const type = String(req.body.type || "").trim();
+
+  if (!name || !type) {
+    return res.status(400).json({
+      error: "O nome e o tipo da carta são obrigatórios.",
+    });
+  }
+
   const card = {
     id: Date.now(),
-    name: String(req.body.name || "").trim(),
-    type: String(req.body.type || "").trim(),
+    name,
+    type,
     attack: Number(req.body.attack) || 0,
     defense: 0,
   };
@@ -46,6 +55,18 @@ app.post("/api/cartas", (req, res) => {
   cards.push(card);
   saveCards();
   res.status(201).json(card);
+});
+
+app.delete("/api/cartas/:id", (req, res) => {
+  const cardIndex = cards.findIndex((card) => String(card.id) === req.params.id);
+
+  if (cardIndex === -1) {
+    return res.status(404).json({ error: "Carta não encontrada." });
+  }
+
+  cards.splice(cardIndex, 1);
+  saveCards();
+  res.status(200).json({ message: "Carta apagada com sucesso." });
 });
 
 app.get("/sobre", (req, res) => {

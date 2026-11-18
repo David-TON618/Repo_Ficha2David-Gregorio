@@ -41,7 +41,7 @@ function App() {
       });
       const data = await response.json();
       if (!response.ok) {
-        setFormError(`HTTP ${response.status}`);
+        setFormError(`HTTP ${response.status}${data.error ? ` — ${data.error}` : ""}`);
         return;
       }
       setCards([...cards, data]);
@@ -50,6 +50,18 @@ function App() {
       setAttack("");
     } catch {
       setFormError("Não foi possível contactar o servidor.");
+    }
+  }
+
+  async function handleDelete(id) {
+    setFormError("");
+    try {
+      const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      setCards((currentCards) => currentCards.filter((card) => card.id !== id));
+      if (randomCard?.id === id) setRandomCard(null);
+    } catch {
+      setFormError("Não foi possível apagar a carta.");
     }
   }
 
@@ -84,7 +96,7 @@ function App() {
         <button onClick={() => setSorted(!sorted)}>{sorted ? "Ordem original" : "Ordenar por ataque"}</button>
       </div>
       <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Procurar pelo nome…" />
-      {visible.length === 0 ? <p>Nenhuma carta corresponde.</p> : <ul>{visible.map((card) => <Card key={card.id} {...card} />)}</ul>}
+      {visible.length === 0 ? <p>Nenhuma carta corresponde.</p> : <ul>{visible.map((card) => <Card key={card.id} {...card} onDelete={handleDelete} />)}</ul>}
       <h2>Carta à sorte</h2>
       <button onClick={pickRandom}>Escolher outra</button>
       {randomCard && <p><b>{randomCard.name}</b> — {randomCard.type} · ataque {randomCard.attack} · defesa {randomCard.defense}</p>}
